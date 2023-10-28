@@ -14,6 +14,7 @@
      zsh
      git
      git-crypt
+     gh
      gnupg
      discord
      waybar
