@@ -9,7 +9,12 @@
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
     ];
-
+  
+  nix.package = pkgs.nixFlakes;
+  nix.extraOptions = ''
+    experimental-features = nix-command flakes
+  '';
+    
   # Use the systemd-boot EFI boot loader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
@@ -40,7 +45,25 @@
   # Enable the Plasma 5 Desktop Environment.
   services.xserver.displayManager.sddm.enable = true;
   services.xserver.desktopManager.plasma5.enable = true;
-  programs.hyprland.enable = true;
+  # Enable Hyprland Window Manager. 
+  programs.hyprland = {
+    enable = true;
+    xwayland.enable = true;
+  };
+  # Enable OpenGL.
+  hardware.opengl.enable = true;
+
+  # Add programs.
+  environment.systemPackages = [
+    pkgs.mako # Notification daemon
+    pkgs.libnotify
+    pkgs.kitty # Terminal emulator
+    pkgs.wofi
+  ];
+
+  # Configure xdg-desktop-portal.
+  xdg.portal.enable = true;
+  xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
 
   # Configure keymap in X11
   services.xserver.layout = "fr";
@@ -49,9 +72,16 @@
   # Enable CUPS to print documents.
   # services.printing.enable = true;
 
-  # Enable sound.
+  # Enable sound with pipewire.
   sound.enable = true;
-  hardware.pulseaudio.enable = true;
+  security.rtkit.enable = true;
+  services.pipewire = {
+    enable = true;
+    alsa.enable = true;
+    alsa.support32Bit = true;
+    pulse.enable = true;
+    jack.enable = true;
+  };
 
   # Enable touchpad support (enabled default in most desktopManager).
   services.xserver.libinput.enable = true;
@@ -63,9 +93,8 @@
     extraGroups = [ "wheel" ]; # Enable ‘sudo’ for the user.
     packages = with pkgs; [
       firefox
-      kitty
       tree
-      vim
+      neovim
     ];
   };
 
